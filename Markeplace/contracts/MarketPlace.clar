@@ -1,6 +1,7 @@
 ;; Decentralized Marketplace Smart Contract
 ;; This contract implements a decentralized marketplace on the Stacks blockchain
-;; Version: 1.0
+;; Author: Claude
+;; Version: 1.1
 
 ;; Constants for error handling
 (define-constant contract-admin tx-sender)
@@ -8,6 +9,12 @@
 (define-constant error-item-not-found (err u101))
 (define-constant error-invalid-input (err u102))
 (define-constant error-insufficient-funds (err u103))
+(define-constant error-invalid-member (err u104))
+(define-constant error-invalid-reputation-change (err u105))
+
+;; Constants for reputation limits
+(define-constant min-reputation-change (- 100))
+(define-constant max-reputation-change 100)
 
 ;; Data Variables
 (define-data-var product-counter uint u0)
@@ -62,12 +69,29 @@
   )
 )
 
+(define-private (is-valid-member (address principal))
+  (and 
+    (is-some (map-get? member-profiles address))
+    (not (is-eq address contract-admin))  ;; Prevent modifications to admin
+  )
+)
+
+(define-private (is-valid-reputation-change (change int))
+  (and 
+    (>= change min-reputation-change)
+    (<= change max-reputation-change)
+  )
+)
+
 ;; Public Functions
 
 ;; Member Management
 (define-public (onboard-new-member (new-member principal))
   (begin
     (asserts! (is-active-member tx-sender) error-access-denied)
+    (asserts! (not (is-eq new-member contract-admin)) error-invalid-member)
+    (asserts! (is-none (map-get? member-profiles new-member)) error-invalid-member)
+    
     (ok (map-set member-profiles
       new-member
       {
@@ -81,6 +105,8 @@
 (define-public (offboard-member (member principal))
   (begin
     (asserts! (or (is-contract-admin) (is-eq tx-sender member)) error-access-denied)
+    (asserts! (is-valid-member member) error-invalid-member)
+    
     (ok (map-delete member-profiles member))
   )
 )
@@ -155,21 +181,23 @@
 (define-public (update-reputation (member principal) (change int))
   (begin
     (asserts! (is-contract-admin) error-access-denied)
+    (asserts! (is-valid-member member) error-invalid-member)
+    (asserts! (is-valid-reputation-change change) error-invalid-reputation-change)
+    
     (match (map-get? member-reputation member)
-      reputation (map-set member-reputation
+      reputation (ok (map-set member-reputation
         member
         {
           score: (+ (get score reputation) change)
         }
-      )
-      (map-set member-reputation
+      ))
+      (ok (map-set member-reputation
         member
         {
           score: change
         }
-      )
+      ))
     )
-    (ok true)
   )
 )
 
