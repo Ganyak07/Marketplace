@@ -1,6 +1,5 @@
 ;; Decentralized Marketplace Smart Contract
 ;; This contract implements a decentralized marketplace on the Stacks blockchain
-;; Author: Claude
 ;; Version: 1.1
 
 ;; Constants for error handling
