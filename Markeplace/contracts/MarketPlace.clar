@@ -2,7 +2,7 @@
 ;; This contract implements a decentralized marketplace on the Stacks blockchain
 ;; Version: 1.2
 
-;; Constants for error handling
+;; Constants for error handlinghj
 (define-constant contract-admin tx-sender)
 (define-constant error-access-denied (err u100))
 (define-constant error-item-not-found (err u101))

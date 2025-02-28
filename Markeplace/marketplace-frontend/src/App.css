@@ -1,0 +1,28 @@
+.App {
+  text-align: center;
+}
+
+nav {
+  background-color: #282c34;
+  padding: 1rem;
+  color: white;
+}
+
+nav h1 {
+  margin: 0;
+}
+
+button {
+  background-color: #61dafb;
+  border: none;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #4fa3c4;
+}
+
+main {
+  padding: 1rem;
+}
